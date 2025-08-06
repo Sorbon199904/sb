@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+  <meta charset="UTF-8">
+  <title>Санҷиши имло ва грамматикаи тоҷикӣ</title>
+  <style>
+    body {
+      background: #f0f8ff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 30px;
+    }
+
+    h2, h3 {
+      color: #004080;
+    }
+
+    textarea {
+      width: 80%;
+      max-width: 700px;
+      height: 120px;
+      font-size: 16px;
+      padding: 10px;
+      border: 2px solid #0099cc;
+      border-radius: 10px;
+      background-color: #ffffff;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #output {
+      margin-top: 25px;
+      padding: 20px;
+      width: 80%;
+      max-width: 700px;
+      background-color: #ffffff;
+      border: 2px solid #0099cc;
+      border-radius: 10px;
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.15);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .highlight {
+      color: #cc0000;
+      font-weight: bold;
+    }
+
+    .section {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Санҷиши имло ва грамматикаи тоҷикӣ</h2>
+  <textarea id="textInput" placeholder="Матни худро ворид намоед..."></textarea><br>
+  <button onclick="checkText()">Санҷиш</button>
+
+  <div id="output" style="display: none;"></div>
+
+  <script>
+    async function checkText() {
+      const text = document.getElementById("textInput").value;
+      const output = document.getElementById("output");
+      output.style.display = "block";
+      output.innerHTML = "<em>Лутфан интизор шавед...</em>";
+
+      try {
+        const response = await fetch("/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+
+        output.innerHTML = `
+          <div class="section"><b>Матн:</b> ${data.original}</div>
+          <div class="section"><b>🔠 Хатогиҳои имло:</b> 
+            ${data.spelling_errors.length > 0 
+              ? '<span class="highlight">' + data.spelling_errors.join(", ") + '</span>' 
+              : 'ёфт нашуд'}
+          </div>
+          <div class="section"><b>📚 Маслиҳатҳои грамматикӣ:</b><br> 
+            ${data.grammar_suggestions.length > 0 
+              ? data.grammar_suggestions.map(s => `<div class="highlight">${s}</div>`).join("") 
+              : 'ёфт нашуд'}
+          </div>
+        `;
+      } catch (error) {
+        output.innerHTML = "<span class='highlight'>Хатогӣ рӯй дод. Санҷед, ки сервер фаъол аст ё на.</span>";
+      }
+    }
+  </script>
+</body>
+</html>
